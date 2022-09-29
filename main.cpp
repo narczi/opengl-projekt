@@ -6,6 +6,10 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
+auto getProgramiv_ptr = &glGetProgramiv;
+void ProgramErrorHandling(PFNGLGETPROGRAMIVPROC GetProgramParameter, GLuint program, int prog_param);
+void ShaderErrorHandling(PFNGLGETSHADERIVPROC GetShaderParameter, GLuint shader, int shader_param);
+
 const char* vertexShaderSource =
 		"#version 330 core \n"
 		"layout (location = 0) in vec3 aPos;\n"
@@ -57,42 +61,19 @@ int main() {
 	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
 	glCompileShader(vertexShader);
-
-	int success;
-	char infoLog[512];
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-
-	if (!success)
-	{
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
+	ShaderErrorHandling(glGetShaderiv, vertexShader, GL_COMPILE_STATUS);
 	// ------------------ FRAGMENT SHADERS ------------------
 	// Orange Fragment Shader 
 	unsigned int fragmentShaderOrange = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShaderOrange, 1, &fragmentShaderSourceOrange, NULL);
 	glCompileShader(fragmentShaderOrange);
-
-	glGetShaderiv(fragmentShaderOrange, GL_COMPILE_STATUS, &success);
-
-	if (!success)
-	{
-		glGetShaderInfoLog(fragmentShaderOrange, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
+	ShaderErrorHandling(glGetShaderiv, fragmentShaderOrange, GL_COMPILE_STATUS);
 
 	// Yellow Fragment Shader 
 	unsigned int fragmentShaderYellow = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShaderYellow, 1, &fragmentShaderSourceYellow, NULL);
 	glCompileShader(fragmentShaderYellow);
-
-	glGetShaderiv(fragmentShaderYellow, GL_COMPILE_STATUS, &success);
-
-	if (!success)
-	{
-		glGetShaderInfoLog(fragmentShaderYellow, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
+	ShaderErrorHandling(glGetShaderiv, fragmentShaderYellow, GL_COMPILE_STATUS);
 
 	// Shader Program object
 	unsigned int shaderProgramOrange = glCreateProgram();
@@ -103,17 +84,8 @@ int main() {
 	glLinkProgram(shaderProgramOrange);
 	glLinkProgram(shaderProgramYellow);
 
-	glGetProgramiv(shaderProgramOrange, GL_LINK_STATUS, &success);
-	if (!success) {
-		glGetProgramInfoLog(shaderProgramOrange, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::LINKING::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
-
-	glGetProgramiv(shaderProgramYellow, GL_LINK_STATUS, &success);
-	if (!success) {
-		glGetProgramInfoLog(shaderProgramYellow, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::LINKING::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
+	ProgramErrorHandling(glGetProgramiv, shaderProgramOrange, GL_LINK_STATUS);
+	ProgramErrorHandling(glGetProgramiv, shaderProgramYellow, GL_LINK_STATUS);
 
 	float vertices_triangle_one[] =
 	{
@@ -171,9 +143,8 @@ int main() {
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShaderOrange);
 
-	
-	;
 
+	
 
 	while (!glfwWindowShouldClose(window)) 
 	{
@@ -215,3 +186,30 @@ void processInput(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) 
 		glfwSetWindowShouldClose(window, true);
 }
+
+
+
+void ProgramErrorHandling(PFNGLGETPROGRAMIVPROC GetProgramParameter, GLuint program, int prog_param) {
+	int success;
+	GetProgramParameter(program, prog_param, &success);
+
+	char infoLog[512];
+	if (!success) {
+		glGetProgramInfoLog(program, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::LINKING::COMPILATION_FAILED\n" << infoLog << std::endl;
+	}
+}
+
+void ShaderErrorHandling(PFNGLGETSHADERIVPROC GetShaderParameter, GLuint shader, int shader_param) {
+	int success;
+	GetShaderParameter(shader, shader_param, &success);
+
+	char infoLog[512];
+	if (!success) {
+		glGetShaderInfoLog(shader, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+	}
+}
+
+// PFNGLGETPROGRAMIVPROC
+// void (*GetProgramParameter)(GLuint, GLenum, GLint)
