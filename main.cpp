@@ -143,9 +143,6 @@ int main() {
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShaderOrange);
 
-
-	
-
 	while (!glfwWindowShouldClose(window)) 
 	{
 		processInput(window);
@@ -187,8 +184,6 @@ void processInput(GLFWwindow* window)
 		glfwSetWindowShouldClose(window, true);
 }
 
-
-
 void ProgramErrorHandling(PFNGLGETPROGRAMIVPROC GetProgramParameter, GLuint program, int prog_param) {
 	int success;
 	GetProgramParameter(program, prog_param, &success);
@@ -202,12 +197,19 @@ void ProgramErrorHandling(PFNGLGETPROGRAMIVPROC GetProgramParameter, GLuint prog
 
 void ShaderErrorHandling(PFNGLGETSHADERIVPROC GetShaderParameter, GLuint shader, int shader_param) {
 	int success;
+	int shader_type;
 	GetShaderParameter(shader, shader_param, &success);
 
 	char infoLog[512];
 	if (!success) {
 		glGetShaderInfoLog(shader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+		glGetShaderiv(shader, GL_SHADER_TYPE, &shader_type);
+		if (shader_type == GL_VERTEX_SHADER) {
+			std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+		}
+		else if (shader_type == GL_FRAGMENT_SHADER) {
+			std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+		}
 	}
 }
 
