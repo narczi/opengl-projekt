@@ -2,6 +2,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <string>
+#include <fstream>
+
+using namespace std;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -9,14 +12,9 @@ void processInput(GLFWwindow* window);
 auto getProgramiv_ptr = &glGetProgramiv;
 void ProgramErrorHandling(PFNGLGETPROGRAMIVPROC GetProgramParameter, GLuint program, int prog_param);
 void ShaderErrorHandling(PFNGLGETSHADERIVPROC GetShaderParameter, GLuint shader, int shader_param);
+const char* load_shader_src(string filename);
 
-const char* vertexShaderSource =
-		"#version 330 core \n"
-		"layout (location = 0) in vec3 aPos;\n"
-		"void main()\n"
-		"{\n"
-		"	gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0); \n"
-		"};\n";
+const char* vertexShaderSource = load_shader_src("primary.vert");
 
 const char* fragmentShaderSourceOrange =
 		"#version 330 core \n"
@@ -143,6 +141,7 @@ int main() {
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShaderOrange);
 
+
 	while (!glfwWindowShouldClose(window)) 
 	{
 		processInput(window);
@@ -211,6 +210,21 @@ void ShaderErrorHandling(PFNGLGETSHADERIVPROC GetShaderParameter, GLuint shader,
 			std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
 		}
 	}
+}
+
+const char* load_shader_src(string filename) {
+	string full_file;
+	string line;
+	ifstream opened_file(filename);
+
+	while (getline(opened_file, line)) {
+		full_file = full_file + line + "\n";
+	}
+
+	char* cstr = new char[full_file.length() + 1];
+	strcpy(cstr, full_file.c_str());
+
+	return cstr;
 }
 
 // PFNGLGETPROGRAMIVPROC
