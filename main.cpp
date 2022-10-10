@@ -15,22 +15,8 @@ void ShaderErrorHandling(PFNGLGETSHADERIVPROC GetShaderParameter, GLuint shader,
 const char* load_shader_src(string filename);
 
 const char* vertexShaderSource = load_shader_src("primary.vert");
-
-const char* fragmentShaderSourceOrange =
-		"#version 330 core \n"
-		"out vec4 FragColor; \n"
-		"void main()\n"
-		"{ \n"
-			"FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-		"};\0";
-
-const char* fragmentShaderSourceYellow =
-		"#version 330 core \n"
-		"out vec4 FragColor; \n"
-		"void main()\n"
-		"{ \n"
-			"FragColor = vec4(1.0f, 1.0f, 0.0f, 1.0f);\n"
-		"};\0";
+const char* fragmentShaderSourceOrange = load_shader_src("orange.frag");
+const char* fragmentShaderSourceYellow = load_shader_src("yellow.frag");
 
 int main() {
 	// ------------------ WINDOW ------------------
