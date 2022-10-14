@@ -52,7 +52,6 @@ int main() {
 	glShaderSource(fragmentShaderOrange, 1, &fragmentShaderSourceOrange, NULL);
 	glCompileShader(fragmentShaderOrange);
 	ShaderErrorHandling(glGetShaderiv, fragmentShaderOrange, GL_COMPILE_STATUS);
-
 	// Yellow Fragment Shader 
 	unsigned int fragmentShaderYellow = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShaderYellow, 1, &fragmentShaderSourceYellow, NULL);
@@ -62,10 +61,13 @@ int main() {
 	// Shader Program object
 	unsigned int shaderProgramOrange = glCreateProgram();
 	unsigned int shaderProgramYellow = glCreateProgram();
+	// Orange Program
 	glAttachShader(shaderProgramOrange, vertexShader);
-	glAttachShader(shaderProgramYellow, fragmentShaderYellow);
 	glAttachShader(shaderProgramOrange, fragmentShaderOrange);
 	glLinkProgram(shaderProgramOrange);
+	// Yellow Program
+	glAttachShader(shaderProgramYellow, vertexShader);
+	glAttachShader(shaderProgramYellow, fragmentShaderYellow);
 	glLinkProgram(shaderProgramYellow);
 
 	ProgramErrorHandling(glGetProgramiv, shaderProgramOrange, GL_LINK_STATUS);
@@ -127,6 +129,9 @@ int main() {
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShaderOrange);
 
+	float timeValue;
+	float greenValue;
+	int vertexColorLocation;
 
 	while (!glfwWindowShouldClose(window)) 
 	{
@@ -135,11 +140,17 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glUseProgram(shaderProgramOrange);
+
+		glUseProgram(shaderProgramOrange);		
 		glBindVertexArray(VAOs[0]);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
+		timeValue = glfwGetTime();
+		greenValue = (sin(timeValue) / 2.0f) + 0.5f;
+		vertexColorLocation = glGetUniformLocation(shaderProgramYellow, "ourColor");
+
 		glUseProgram(shaderProgramYellow);
+		glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
 		glBindVertexArray(VAOs[1]);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
