@@ -1,4 +1,5 @@
-Grafika_2.vcxproj
-Grafika_2.vcxproj.filters
-Grafika_2.vcxproj.user
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
 x64
+glad.c
