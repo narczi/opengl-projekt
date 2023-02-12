@@ -3,6 +3,10 @@
 #include <GLFW/glfw3.h>
 #include <string>
 #include <fstream>
+#include "Shader.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 using namespace std;
 
@@ -82,9 +86,9 @@ int main() {
 
 	float vertices_triangle_two[] =
 	{
-		 0.0f, -1.0f, 0.0f,
-		 1.0f, -1.0f, 0.0f,
-		 0.5f,  0.0f, 0.0f,
+		-1.0f, -1.0f, 0.0f, // vertex bottom-left
+		 0.0f, -1.0f, 0.0f, // vertex bottom-right
+		-0.5f,  0.0f, 0.0f, // vertex top
 	};
 
 	float vertices_square[] =
@@ -94,16 +98,31 @@ int main() {
 		-0.5f, -0.5f, 0.0f, // bottom left
 		-0.5f,  0.5f, 0.0f // top left
 	};
+	float colors_square[] =
+	{
+		1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 1.0f,
+		1.0f, 1.0f, 0.0f
+	};
 	unsigned int indices_square[] =
 	{ // note that we start from 0!
 		0, 1, 3, // first triangle
 		1, 2, 3 // second triangle
 	};
 
+	float square[] = {
+		// positions // colors // texture coords
+		 0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
+		 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
+		-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
+		-0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f // top left
+	};
+
 	// Vertex Array Object  (VAO)
-	unsigned int VAOs[2], VBOs[2], EBO;
-	glGenVertexArrays(2, VAOs);
-	glGenBuffers(2, VBOs);
+	unsigned int VAOs[3], VBOs[3], EBO;
+	glGenVertexArrays(3, VAOs);
+	glGenBuffers(3, VBOs);
 	glGenBuffers(1, &EBO);
 
 	glBindVertexArray(VAOs[0]);
@@ -114,7 +133,6 @@ int main() {
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
-	//glBindVertexArray(0);
 	glBindVertexArray(VAOs[1]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices_triangle_two), vertices_triangle_two, GL_STATIC_DRAW);
@@ -122,18 +140,63 @@ int main() {
 	glEnableVertexAttribArray(0);
 
 	// Element Buffer Object (EBO)
+	glBindVertexArray(VAOs[2]);
+	glBindBuffer(GL_ARRAY_BUFFER, VBOs[2]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices_square), vertices_square, GL_STATIC_DRAW);
 	
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices_square), indices_square, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(square), indices_square, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 
 	// activate 
 	
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShaderOrange);
 
+	Shader ourShader("primary.vert", "yellow.frag");
+	Shader TriShader("primary.vert", "orange.frag");
+
 	float timeValue;
 	float greenValue;
 	int vertexColorLocation;
+
+	// TEXTURES
+	float texCoords[] = {
+		1.0f, 1.0f, //top-right corner
+		1.0f, 0.0f, //lower-right corner
+		0.0f, 0.0f, //lower-left corner
+		0.0f, 1.0f, //top-left corner
+	};
+
+	
+
+	unsigned int texture; 
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	int width, height, nrChannels;
+	unsigned char* data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
+
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		cout << "Failed to load texture" << endl;
+	}
+	
+	stbi_image_free(data);
 
 	while (!glfwWindowShouldClose(window)) 
 	{
@@ -141,22 +204,22 @@ int main() {
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-
-
-		glUseProgram(shaderProgramOrange);		
+	
+		TriShader.use();
 		glBindVertexArray(VAOs[0]);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		timeValue = glfwGetTime();
 		greenValue = (sin(timeValue) / 2.0f) + 0.5f;
 		vertexColorLocation = glGetUniformLocation(shaderProgramYellow, "ourColor");
-
-		glUseProgram(shaderProgramYellow);
-		glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+		ourShader.use();
+		ourShader.setColor("ourColor", 0.0f, greenValue, 0.0f);
 		glBindVertexArray(VAOs[1]);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		//glBindVertexArray(0);
+
+		glBindVertexArray(VAOs[2]);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
