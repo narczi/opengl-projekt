@@ -11,7 +11,7 @@
 using namespace std;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window);
+void processInput(GLFWwindow* window, Shader* shader);
 
 auto getProgramiv_ptr = &glGetProgramiv;
 void ProgramErrorHandling(PFNGLGETPROGRAMIVPROC GetProgramParameter, GLuint program, int prog_param);
@@ -112,11 +112,11 @@ int main() {
 	};
 
 	float square[] = {
-		// positions // colors // texture coords
-		 0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
-		 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
+		// positions		// colors		  // texture coords
+		 0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 2.0f, 2.0f, // top right
+		 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 2.0f, 0.0f, // bottom right
 		-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
-		-0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f // top left
+		-0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 2.0f // top left
 	};
 
 	// Vertex Array Object  (VAO)
@@ -184,8 +184,8 @@ int main() {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture[0]);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -209,8 +209,8 @@ int main() {
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, texture[1]);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	
@@ -228,11 +228,13 @@ int main() {
 	}
 
 	stbi_image_free(awesomeface);
+
+	SquareShader.setFloat("mixer", 0.2f);
 	
 
 	while (!glfwWindowShouldClose(window)) 
 	{
-		processInput(window);
+		processInput(window, &SquareShader);
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -252,6 +254,7 @@ int main() {
 
 		SquareShader.use();
 		SquareShader.setColor("ourColor", 1.0f, 0.0f, 0.0f);
+		
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture[0]);
@@ -279,10 +282,25 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow* window) 
+void processInput(GLFWwindow* window, Shader* shader) 
 {
+	float current_val;
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) 
 		glfwSetWindowShouldClose(window, true);
+	else if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+		glGetUniformfv(shader->ID, glGetUniformLocation(shader->ID, "mixer"), &current_val);
+		shader->setFloat("mixer", current_val + 0.001f);
+		if (current_val >= 1.0f)
+			shader->setFloat("mixer", 1.0f);
+		cout << current_val << endl;
+	}
+	else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+		glGetUniformfv(shader->ID, glGetUniformLocation(shader->ID, "mixer"), &current_val);
+		shader->setFloat("mixer", current_val - 0.001f);
+		if (current_val <= 0.0f)
+			shader->setFloat("mixer", 0.0f);
+		cout << current_val << endl;
+	}
 }
 
 void ProgramErrorHandling(PFNGLGETPROGRAMIVPROC GetProgramParameter, GLuint program, int prog_param) {
