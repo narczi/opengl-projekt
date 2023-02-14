@@ -142,12 +142,15 @@ int main() {
 	// Element Buffer Object (EBO)
 	glBindVertexArray(VAOs[2]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBOs[2]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices_square), vertices_square, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(square), square, GL_STATIC_DRAW);
 	
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(square), indices_square, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
@@ -159,6 +162,10 @@ int main() {
 
 	Shader ourShader("primary.vert", "yellow.frag");
 	Shader TriShader("primary.vert", "orange.frag");
+	Shader SquareShader("primary.vert", "square.frag");
+	SquareShader.use();
+	SquareShader.setInt("texture1", 0);
+	SquareShader.setInt("texture2", 1);
 
 	float timeValue;
 	float greenValue;
@@ -172,31 +179,56 @@ int main() {
 		0.0f, 1.0f, //top-left corner
 	};
 
-	
-
-	unsigned int texture; 
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	unsigned int texture[2]; 
+	glGenTextures(2, texture);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture[0]);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	int width, height, nrChannels;
-	unsigned char* data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
+	stbi_set_flip_vertically_on_load(true);
 
-	if (data)
+	int width, height, nrChannels;
+	unsigned char* deski = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
+
+	if (deski)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, deski);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	else
 	{
 		cout << "Failed to load texture" << endl;
 	}
+
+	stbi_image_free(deski);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, texture[1]);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	
-	stbi_image_free(data);
+	int width2, height2, nrChannels2;
+	unsigned char* awesomeface = stbi_load("awesomeface.png", &width2, &height2, &nrChannels2, 0);
+
+	if (awesomeface)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width2, height2, 0, GL_RGBA, GL_UNSIGNED_BYTE, awesomeface);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		cout << "Failed to load texture" << endl;
+	}
+
+	stbi_image_free(awesomeface);
+	
 
 	while (!glfwWindowShouldClose(window)) 
 	{
@@ -211,12 +243,20 @@ int main() {
 
 		timeValue = glfwGetTime();
 		greenValue = (sin(timeValue) / 2.0f) + 0.5f;
-		vertexColorLocation = glGetUniformLocation(shaderProgramYellow, "ourColor");
+
 		ourShader.use();
 		ourShader.setColor("ourColor", 0.0f, greenValue, 0.0f);
+
 		glBindVertexArray(VAOs[1]);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
+		SquareShader.use();
+		SquareShader.setColor("ourColor", 1.0f, 0.0f, 0.0f);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture[0]);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture[1]);
 		glBindVertexArray(VAOs[2]);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
