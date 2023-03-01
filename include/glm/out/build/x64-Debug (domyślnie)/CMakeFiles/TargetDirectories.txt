@@ -1,0 +1,3 @@
+D:/uczelnia/4_rok/grafika/grafika-projekt/include/glm/out/build/x64-Debug (domyślnie)/CMakeFiles/glm_dummy.dir
+D:/uczelnia/4_rok/grafika/grafika-projekt/include/glm/out/build/x64-Debug (domyślnie)/CMakeFiles/edit_cache.dir
+D:/uczelnia/4_rok/grafika/grafika-projekt/include/glm/out/build/x64-Debug (domyślnie)/CMakeFiles/rebuild_cache.dir
