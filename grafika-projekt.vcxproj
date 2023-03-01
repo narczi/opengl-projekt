@@ -150,6 +150,7 @@
   <ItemGroup>
     <None Include="orange.frag" />
     <None Include="primary.vert" />
+    <None Include="square.frag" />
     <None Include="square.vert" />
     <None Include="yellow.frag" />
   </ItemGroup>

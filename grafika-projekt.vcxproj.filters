@@ -38,6 +38,9 @@
     <None Include="square.vert">
       <Filter>Pliki źródłowe</Filter>
     </None>
+    <None Include="square.frag">
+      <Filter>Pliki źródłowe</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
