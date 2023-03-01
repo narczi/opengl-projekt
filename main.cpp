@@ -166,7 +166,7 @@ int main() {
 
 	Shader ourShader("primary.vert", "yellow.frag");
 	Shader TriShader("primary.vert", "orange.frag");
-	Shader SquareShader("primary.vert", "square.frag");
+	Shader SquareShader("square.vert", "square.frag");
 	SquareShader.use();
 	SquareShader.setInt("texture1", 0);
 	SquareShader.setInt("texture2", 1);
@@ -239,8 +239,14 @@ int main() {
 	glm::mat4 trans = glm::mat4(1.0f); // zdefiniowanie macierzy jednostkowej
 	trans = glm::translate(trans, glm::vec3(1.0f, 1.0f, 0.0f));
 	vec = trans * vec;
-
 	std::cout << vec.x << ", " << vec.y << ", " << vec.z << std::endl;
+
+	glm::mat4 trans2 = glm::mat4(1.0f);
+	trans2 = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5)); // kolejnosc poprawna?
+	trans2 = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0));
+	
+	unsigned int transformLoc = glGetUniformLocation(SquareShader.ID, "transform");
+	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans2));
 
 	while (!glfwWindowShouldClose(window)) 
 	{
@@ -264,6 +270,13 @@ int main() {
 
 		SquareShader.use();
 		SquareShader.setColor("ourColor", 1.0f, 0.0f, 0.0f);
+
+		glm::mat4 trans2 = glm::mat4(1.0f);
+		trans2 = glm::translate(trans2, glm::vec3(0.5f, -0.5f, 0.0f));
+		trans2 = glm::rotate(trans2, (float)glfwGetTime(), glm::vec3(0.0, 0.0, 1.0));
+
+		transformLoc = glGetUniformLocation(SquareShader.ID, "transform");
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans2));
 		
 
 		glActiveTexture(GL_TEXTURE0);
