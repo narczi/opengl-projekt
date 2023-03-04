@@ -4,6 +4,8 @@
 #include <string>
 #include <fstream>
 #include "Shader.h"
+#include "Cube.h"
+#include "Vao.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -48,39 +50,6 @@ int main() {
 	}
 	glViewport(0, 0, 800, 600);
 
-	// ------------------ VERTEX SHADERS ------------------
-	// Vertex Shader
-	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertexShader);
-	ShaderErrorHandling(glGetShaderiv, vertexShader, GL_COMPILE_STATUS);
-	// ------------------ FRAGMENT SHADERS ------------------
-	// Orange Fragment Shader 
-	unsigned int fragmentShaderOrange = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShaderOrange, 1, &fragmentShaderSourceOrange, NULL);
-	glCompileShader(fragmentShaderOrange);
-	ShaderErrorHandling(glGetShaderiv, fragmentShaderOrange, GL_COMPILE_STATUS);
-	// Yellow Fragment Shader 
-	unsigned int fragmentShaderYellow = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShaderYellow, 1, &fragmentShaderSourceYellow, NULL);
-	glCompileShader(fragmentShaderYellow);
-	ShaderErrorHandling(glGetShaderiv, fragmentShaderYellow, GL_COMPILE_STATUS);
-
-	// Shader Program object
-	unsigned int shaderProgramOrange = glCreateProgram();
-	unsigned int shaderProgramYellow = glCreateProgram();
-	// Orange Program
-	glAttachShader(shaderProgramOrange, vertexShader);
-	glAttachShader(shaderProgramOrange, fragmentShaderOrange);
-	glLinkProgram(shaderProgramOrange);
-	// Yellow Program
-	glAttachShader(shaderProgramYellow, vertexShader);
-	glAttachShader(shaderProgramYellow, fragmentShaderYellow);
-	glLinkProgram(shaderProgramYellow);
-
-	ProgramErrorHandling(glGetProgramiv, shaderProgramOrange, GL_LINK_STATUS);
-	ProgramErrorHandling(glGetProgramiv, shaderProgramYellow, GL_LINK_STATUS);
-
 	float vertices_triangle_one[] =
 	{
 		-1.0f, -0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
@@ -123,10 +92,67 @@ int main() {
 		-0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 2.0f // top left
 	};
 
+	float cube[] = {
+	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+	};
+
+	glm::vec3 cubePositions[] = {
+		glm::vec3(0.0f,  0.0f,  0.0f),
+		glm::vec3(2.0f,  5.0f, -15.0f),
+		glm::vec3(-1.5f, -2.2f, -2.5f),
+		glm::vec3(-3.8f, -2.0f, -12.3f),
+		glm::vec3(2.4f, -0.4f, -3.5f),
+		glm::vec3(-1.7f,  3.0f, -7.5f),
+		glm::vec3(1.3f, -2.0f, -2.5f),
+		glm::vec3(1.5f,  2.0f, -2.5f),
+		glm::vec3(1.5f,  0.2f, -1.5f),
+		glm::vec3(-1.3f,  1.0f, -1.5f)
+	};
+
 	// Vertex Array Object  (VAO)
-	unsigned int VAOs[3], VBOs[3], EBO;
-	glGenVertexArrays(3, VAOs);
-	glGenBuffers(3, VBOs);
+	unsigned int VAOs[4], VBOs[4], EBO;
+	glGenVertexArrays(4, VAOs);
+	glGenBuffers(4, VBOs);
 	glGenBuffers(1, &EBO);
 
 	glBindVertexArray(VAOs[0]);
@@ -137,13 +163,11 @@ int main() {
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
-	glBindVertexArray(VAOs[1]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices_triangle_two), vertices_triangle_two, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
+	//glBindVertexArray(VAOs[1]);
+	Vao trojkat_2(&VAOs[1], &VBOs[1], vertices_triangle_two, sizeof(vertices_triangle_two));
 
 	// Element Buffer Object (EBO)
+	// KWADRAT
 	glBindVertexArray(VAOs[2]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBOs[2]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(square), square, GL_STATIC_DRAW);
@@ -152,36 +176,37 @@ int main() {
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(square), indices_square, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
-	// activate 
+	// SZESCIAN
+	glBindVertexArray(VAOs[3]);
+	glBindBuffer(GL_ARRAY_BUFFER, VBOs[3]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 	
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShaderOrange);
 
 	Shader ourShader("primary.vert", "yellow.frag");
 	Shader TriShader("primary.vert", "orange.frag");
 	Shader SquareShader("square.vert", "square.frag");
+	Shader CubeShader("cube.vert", "cube.frag");
 	SquareShader.use();
 	SquareShader.setInt("texture1", 0);
 	SquareShader.setInt("texture2", 1);
 
+	CubeShader.use();
+	CubeShader.setInt("texture1", 0);
+	CubeShader.setInt("texture2", 1);
+
 	float timeValue;
 	float greenValue;
 	int vertexColorLocation;
-
-	// TEXTURES
-	float texCoords[] = {
-		1.0f, 1.0f, //top-right corner
-		1.0f, 0.0f, //lower-right corner
-		0.0f, 0.0f, //lower-left corner
-		0.0f, 1.0f, //top-left corner
-	};
 
 	unsigned int texture[2]; 
 	glGenTextures(2, texture);
@@ -234,26 +259,37 @@ int main() {
 	stbi_image_free(awesomeface);
 
 	SquareShader.setFloat("mixer", 0.2f);
-	
-	glm::vec4 vec(1.0f, 0.0f, 0.0f, 1.0f);
-	glm::mat4 trans = glm::mat4(1.0f); // zdefiniowanie macierzy jednostkowej
-	trans = glm::translate(trans, glm::vec3(1.0f, 1.0f, 0.0f));
-	vec = trans * vec;
-	std::cout << vec.x << ", " << vec.y << ", " << vec.z << std::endl;
 
 	glm::mat4 trans2 = glm::mat4(1.0f);
-	trans2 = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5)); // kolejnosc poprawna?
-	trans2 = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0));
+	trans2 = glm::scale(trans2, glm::vec3(0.5, 0.5, 0.5)); // kolejnosc poprawna?
+	trans2 = glm::rotate(trans2, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0));
 	
 	unsigned int transformLoc = glGetUniformLocation(SquareShader.ID, "transform");
 	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans2));
 
-	while (!glfwWindowShouldClose(window)) 
+	glm::mat4 model_matrix = glm::mat4(1.0f);
+	model_matrix = glm::rotate(model_matrix, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	glm::mat4 view_matrix = glm::mat4(1.0f);
+	view_matrix = glm::translate(view_matrix, glm::vec3(0.0f, 0.0f, -3.0f));
+	glm::mat4 projection_matrix;
+	projection_matrix = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+
+	unsigned int modelLoc = glGetUniformLocation(SquareShader.ID, "model");
+	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model_matrix));
+	unsigned int viewLoc = glGetUniformLocation(SquareShader.ID, "view");
+	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
+	unsigned int projectionLoc = glGetUniformLocation(SquareShader.ID, "projection");
+	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
+
+	glEnable(GL_DEPTH_TEST);
+
+	while (!glfwWindowShouldClose(window))
 	{
 		processInput(window, &SquareShader);
 
+
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 		TriShader.use();
 		glBindVertexArray(VAOs[0]);
@@ -276,16 +312,32 @@ int main() {
 		trans2 = glm::rotate(trans2, (float)glfwGetTime(), glm::vec3(0.0, 0.0, 1.0));
 
 		transformLoc = glGetUniformLocation(SquareShader.ID, "transform");
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans2));
+		//glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans2));
 		
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture[0]);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture[1]);
-		glBindVertexArray(VAOs[2]);
+
+		glBindVertexArray(VAOs[2]); // kwadrat
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
+
+		CubeShader.use();
+		glBindVertexArray(VAOs[3]); // szescian
+
+		
+		for (int i = 0; i < 10; i++) {
+			glm::mat4 model_matrix = glm::mat4(1.0f);
+			model_matrix = glm::translate(model_matrix, cubePositions[i]);
+			float angle = 20.0f * i;
+			model_matrix = glm::rotate(model_matrix, (float)glfwGetTime() * glm::radians(angle),
+				glm::vec3(0.5f, 1.0f, 0.0f));
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model_matrix));
+
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -293,8 +345,6 @@ int main() {
 
 	glDeleteVertexArrays(2, VAOs);
 	glDeleteBuffers(2, VBOs);
-	glDeleteProgram(shaderProgramOrange);
-	glDeleteProgram(shaderProgramYellow);
 
 	glfwTerminate();
 	return 0;
