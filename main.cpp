@@ -28,6 +28,13 @@ const char* vertexShaderSource = load_shader_src("primary.vert");
 const char* fragmentShaderSourceOrange = load_shader_src("orange.frag");
 const char* fragmentShaderSourceYellow = load_shader_src("yellow.frag");
 
+glm::vec3 cameraPos		= glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront   = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp		= glm::vec3(0.0f, 1.0f, 0.0f);
+
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
+
 int main() {
 	// ------------------ WINDOW ------------------
 	glfwInit();
@@ -136,6 +143,50 @@ int main() {
 	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
 
+	float naked_cube[] = {
+	-0.5f, -0.5f, -0.5f,
+	 0.5f, -0.5f, -0.5f,
+	 0.5f,  0.5f, -0.5f,
+	 0.5f,  0.5f, -0.5f,
+	-0.5f,  0.5f, -0.5f,
+	-0.5f, -0.5f, -0.5f,
+
+	-0.5f, -0.5f,  0.5f,
+	 0.5f, -0.5f,  0.5f,
+	 0.5f,  0.5f,  0.5f,
+	 0.5f,  0.5f,  0.5f,
+	-0.5f,  0.5f,  0.5f,
+	-0.5f, -0.5f,  0.5f,
+
+	-0.5f,  0.5f,  0.5f,
+	-0.5f,  0.5f, -0.5f,
+	-0.5f, -0.5f, -0.5f,
+	-0.5f, -0.5f, -0.5f,
+	-0.5f, -0.5f,  0.5f,
+	-0.5f,  0.5f,  0.5f,
+
+	 0.5f,  0.5f,  0.5f,
+	 0.5f,  0.5f, -0.5f,
+	 0.5f, -0.5f, -0.5f,
+	 0.5f, -0.5f, -0.5f,
+	 0.5f, -0.5f,  0.5f,
+	 0.5f,  0.5f,  0.5f,
+
+	-0.5f, -0.5f, -0.5f,
+	 0.5f, -0.5f, -0.5f,
+	 0.5f, -0.5f,  0.5f,
+	 0.5f, -0.5f,  0.5f,
+	-0.5f, -0.5f,  0.5f,
+	-0.5f, -0.5f, -0.5f,
+
+	-0.5f,  0.5f, -0.5f,
+	 0.5f,  0.5f, -0.5f,
+	 0.5f,  0.5f,  0.5f,
+	 0.5f,  0.5f,  0.5f,
+	-0.5f,  0.5f,  0.5f,
+	-0.5f,  0.5f, -0.5f,
+	};
+
 	glm::vec3 cubePositions[] = {
 		glm::vec3(0.0f,  0.0f,  0.0f),
 		glm::vec3(2.0f,  5.0f, -15.0f),
@@ -150,7 +201,7 @@ int main() {
 	};
 
 	// Vertex Array Object  (VAO)
-	unsigned int VAOs[4], VBOs[4], EBO;
+	unsigned int VAOs[5], VBOs[5], EBO;
 	glGenVertexArrays(4, VAOs);
 	glGenBuffers(4, VBOs);
 	glGenBuffers(1, &EBO);
@@ -181,7 +232,7 @@ int main() {
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
-	// SZESCIAN
+	// SZESCIANY
 	glBindVertexArray(VAOs[3]);
 	glBindBuffer(GL_ARRAY_BUFFER, VBOs[3]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
@@ -190,12 +241,14 @@ int main() {
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-	
+
+	//Vao szescian_light(&VAOs[4], &VBOs[4], naked_cube, sizeof(naked_cube));
 
 	Shader ourShader("primary.vert", "yellow.frag");
 	Shader TriShader("primary.vert", "orange.frag");
 	Shader SquareShader("square.vert", "square.frag");
 	Shader CubeShader("cube.vert", "cube.frag");
+	Shader LightShader("light_cube.vert", "light_cube.frag");
 	SquareShader.use();
 	SquareShader.setInt("texture1", 0);
 	SquareShader.setInt("texture2", 1);
@@ -270,7 +323,7 @@ int main() {
 	glm::mat4 model_matrix = glm::mat4(1.0f);
 	model_matrix = glm::rotate(model_matrix, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	glm::mat4 view_matrix = glm::mat4(1.0f);
-	view_matrix = glm::translate(view_matrix, glm::vec3(0.0f, 0.0f, -3.0f));
+	view_matrix = glm::translate(view_matrix, glm::vec3(0.0f, 0.0f, -5.0f));
 	glm::mat4 projection_matrix;
 	projection_matrix = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
 
@@ -279,9 +332,11 @@ int main() {
 	unsigned int viewLoc = glGetUniformLocation(SquareShader.ID, "view");
 	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
 	unsigned int projectionLoc = glGetUniformLocation(SquareShader.ID, "projection");
-	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
+	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));	
+
 
 	glEnable(GL_DEPTH_TEST);
+
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -307,6 +362,7 @@ int main() {
 		SquareShader.use();
 		SquareShader.setColor("ourColor", 1.0f, 0.0f, 0.0f);
 
+
 		glm::mat4 trans2 = glm::mat4(1.0f);
 		trans2 = glm::translate(trans2, glm::vec3(0.5f, -0.5f, 0.0f));
 		trans2 = glm::rotate(trans2, (float)glfwGetTime(), glm::vec3(0.0, 0.0, 1.0));
@@ -326,6 +382,15 @@ int main() {
 
 		CubeShader.use();
 		glBindVertexArray(VAOs[3]); // szescian
+		glm::mat4 view;
+		//view = glm::lookAt(glm::vec3(camX, 0.0f, camZ), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+		CubeShader.setMat4("view", view);
+
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+		
 
 		
 		for (int i = 0; i < 10; i++) {
@@ -357,6 +422,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 void processInput(GLFWwindow* window, Shader* shader) 
 {
+	const float cameraSpeed = 8.0f * deltaTime;
 	float current_val;
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) 
 		glfwSetWindowShouldClose(window, true);
@@ -374,7 +440,20 @@ void processInput(GLFWwindow* window, Shader* shader)
 			shader->setFloat("mixer", 0.0f);
 		cout << current_val << endl;
 	}
+	else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+		cameraPos += cameraSpeed * cameraFront;
+		cout << cameraPos.x << ", " << cameraPos.y << ", " << cameraPos.z << endl;
+	}
+	else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+		cameraPos -= cameraSpeed * cameraFront;
+		cout << cameraPos.x << ", " << cameraPos.y << ", " << cameraPos.z << endl;
+	}
+	else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+	}else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 }
+		
 
 void ProgramErrorHandling(PFNGLGETPROGRAMIVPROC GetProgramParameter, GLuint program, int prog_param) {
 	int success;

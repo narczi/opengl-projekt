@@ -152,6 +152,8 @@
   <ItemGroup>
     <None Include="cube.frag" />
     <None Include="cube.vert" />
+    <None Include="light_cube.frag" />
+    <None Include="light_cube.vert" />
     <None Include="orange.frag" />
     <None Include="primary.vert" />
     <None Include="square.frag" />

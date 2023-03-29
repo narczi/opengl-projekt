@@ -53,6 +53,12 @@
     <None Include="cube.frag">
       <Filter>Pliki źródłowe</Filter>
     </None>
+    <None Include="light_cube.vert">
+      <Filter>Pliki źródłowe</Filter>
+    </None>
+    <None Include="light_cube.frag">
+      <Filter>Pliki źródłowe</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
