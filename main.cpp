@@ -400,6 +400,7 @@ int main() {
 		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 		CubeShader.setMat4("view", view);
 		LightShader.setMat4("view", view);
+		LightShader.setVec3("eyePos", cameraPos);
 
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
@@ -409,7 +410,7 @@ int main() {
 			glm::mat4 model_matrix = glm::mat4(1.0f);
 			model_matrix = glm::translate(model_matrix, cubePositions[i]);
 			float angle = 20.0f * i;
-			model_matrix = glm::rotate(model_matrix, (float)glfwGetTime() * glm::radians(angle),
+			model_matrix = glm::rotate(model_matrix, (float)glfwGetTime() * 0.1f * glm::radians(angle),
 				glm::vec3(0.5f, 1.0f, 0.0f));
 			//glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model_matrix));
 			LightShader.setMat4("model", model_matrix);

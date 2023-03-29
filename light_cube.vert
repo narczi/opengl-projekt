@@ -7,26 +7,14 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
-uniform vec3 lightDir;
-
-out vec3 color;
-
-float directionalLight(vec3 lightDir, vec3 normal) {
-    float f = dot(normalize(normal), -lightDir);
-    if (f > 0)
-        return f;
-    else
-        return 0.0;
-}
+out vec2 TexCoord;
+out vec3 normal;
+out vec3 position;
 
 void main()
 {
-    vec3 normal = mat3(transpose(inverse(model))) * aNormal;
-    float light = directionalLight(lightDir, normal);
-
-    color = vec3(light, light, light);
-    //color = normal;
-    //color = vec3(aTexCoord, 0.0);
-
     gl_Position = projection * view * model * vec4(aPos, 1.0);
+    TexCoord = vec2(0.0, 0.0);
+    normal = mat3(transpose(inverse(model))) * aNormal;
+    position = vec3(model * vec4(aPos, 1.0));
 };
